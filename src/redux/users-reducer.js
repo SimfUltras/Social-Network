@@ -81,9 +81,11 @@ export const toggleIsFetching = (isFetching) => ({ type: TOGGLE_IS_FETCHING, isF
 export const toggleFollowingProgress = (isFetching, userId) => ({ type: TOGGLE_IS_FOLLOWING_PROGRESS, isFetching, userId })
 
 
-export const getUsers = (currentPage, pageSize) => { // thunkCreator
+export const getUsers = (currentPage, pageSize) => { // thunkCreator // у него называется request users 
   return (dispatch) => { // thunk
     dispatch(toggleIsFetching(true));
+    dispatch(setCurrentPage(currentPage));
+
     usersAPI.getUsers(currentPage, pageSize) // axios request 
       .then(data => {
         dispatch(toggleIsFetching(false));

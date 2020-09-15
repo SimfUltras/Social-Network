@@ -24,7 +24,7 @@ let store = {
         { id: 2, name: 'Sasha' },
         { id: 3, name: 'Shkiper' },
         { id: 4, name: 'Player' },
-        { id: 5, name: 'Enri' },
+        { id: 5, name: 'Erni' },
       ],
       newMessageBody: "",
     },
