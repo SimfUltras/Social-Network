@@ -10,7 +10,7 @@ const maxLength10 = maxLengthCreator(10);
 
 
 
-const MyPosts = (props) => {
+const MyPosts = React.memo(props => {
   let postsElements = props.posts.map(p => <Post message={p.message} id={p.id} likesCount={p.likesCount} />);
   let newPostElement = React.createRef();
   let onAddPost = (values) => {
@@ -25,7 +25,7 @@ const MyPosts = (props) => {
       </div>
     </div>
   )
-}
+});
 
 const AddNewPostForm = (props) => {
   return(

@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import Navbar from './components/Navbar/Navbar';
-import { Route, BrowserRouter } from 'react-router-dom';
+import { Route, BrowserRouter, withRouter } from 'react-router-dom';
 import News from './components/News/News';
 import Music from './components/Music/Music';
 import Sett from './components/Settings/Settings';
@@ -13,6 +13,9 @@ import LoginPage from './components/Login/Login';
 import { connect } from 'react-redux';
 import { initializeApp } from './redux/app-reducer';
 import Preloader from './components/common/preloader/preloader';
+import store from './redux/redux-store';
+import { Provider } from 'react-redux';
+import { compose } from 'redux';
 
 
 class App extends React.Component {
@@ -23,7 +26,6 @@ class App extends React.Component {
     if (!this.props.initialized)
       return <Preloader />
     return (
-      <BrowserRouter>
         <div className='app-wrapper'>
           <HeaderContainer />
           <Navbar />
@@ -37,7 +39,6 @@ class App extends React.Component {
             <Route path='/login' render={() => <LoginPage />} />
           </div>
         </div>
-      </BrowserRouter>
     )
   }
 };
@@ -46,4 +47,18 @@ const mapStateToProps = (state) => ({
   initialized: state.app.initialized
 })
 
-export default connect(mapStateToProps, { initializeApp })(App);  
+let AppContainer = compose(
+  withRouter,
+  connect(mapStateToProps, { initializeApp }))(App);
+
+const SamuraiJsApp = (props) => {
+ return  <BrowserRouter>
+    <Provider store={store}>
+      <React.StrictMode>
+        <AppContainer />
+      </React.StrictMode>
+    </Provider>
+  </BrowserRouter>
+}
+
+export default SamuraiJsApp;

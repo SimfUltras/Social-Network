@@ -1,4 +1,5 @@
 import { usersAPI } from '../api/api';
+import { updateObjectInArray } from '../utilites/validators/objects-helpers';
 
 const FOLLOW = 'FOLLOW';
 const UNFOLLOW = 'UNFOLLOW';
@@ -22,23 +23,12 @@ const usersReducer = (state = initialState, action) => {
     case FOLLOW:
       return {
         ...state,
-        users: state.users.map(u => {
-          if (u.id === action.userId) {
-            return { ...u, followed: true }
-          }
-          return u;
-        })
+        users: updateObjectInArray(state.users,action.userId,'id',{followed: true})
       }
     case UNFOLLOW:
       return {
         ...state,
-        users: state.users.map(u => {
-          if (u.id === action.userId) {
-            return { ...u, followed: false }
-          }
-          return u;
-        })
-
+        users: updateObjectInArray(state.users,action.userId,'id',{followed: false})
       }
     case SET_USERS:
       return {
@@ -82,41 +72,35 @@ export const toggleFollowingProgress = (isFetching, userId) => ({ type: TOGGLE_I
 
 
 export const getUsers = (currentPage, pageSize) => { // thunkCreator // у него называется request users 
-  return (dispatch) => { // thunk
+  return async (dispatch) => { // thunk
     dispatch(toggleIsFetching(true));
     dispatch(setCurrentPage(currentPage));
 
-    usersAPI.getUsers(currentPage, pageSize) // axios request 
-      .then(data => {
-        dispatch(toggleIsFetching(false));
-        dispatch(setUsers(data.items));
-        dispatch(setTotalUsersCount(data.totalCount));
-      });
+    let data = await usersAPI.getUsers(currentPage, pageSize);// axios request 
+    dispatch(toggleIsFetching(false));
+    dispatch(setUsers(data.items));
+    dispatch(setTotalUsersCount(data.totalCount));
   }
 }
 
+const followUnfollowFlow = async (dispatch, userId, apiMethod, actionCreator) => {
+  dispatch(toggleFollowingProgress(true, userId));
+    let response = await apiMethod(userId)
+    if (response.data.resultCode === 0) {
+      dispatch(actionCreator(userId));
+    }
+    dispatch(toggleFollowingProgress(false, userId));
+}
+
 export const follow = (userId) => { // thunkCreator
-  return (dispatch) => { // thunk
-    dispatch(toggleFollowingProgress(true, userId));
-    usersAPI.follow(userId)
-      .then(response => {
-        if (response.data.resultCode === 0) {
-          dispatch(followSuccess(userId));
-        }
-        dispatch(toggleFollowingProgress(false, userId));
-      });
+  return async (dispatch) => { // thunk
+    followUnfollowFlow(dispatch, userId, usersAPI.follow.bind(usersAPI), followSuccess);
   }
 }
+
 export const unFollow = (userId) => { // thunkCreator
-  return (dispatch) => { // thunk
-    dispatch(toggleFollowingProgress(true, userId));
-    usersAPI.unFollow(userId)
-      .then(response => {
-        if (response.data.resultCode === 0) {
-          dispatch(unFollowSuccess(userId))
-        }
-        dispatch(toggleFollowingProgress(false, userId));
-      });
+  return async (dispatch) => { // thunk
+    followUnfollowFlow(dispatch, userId, usersAPI.unFollow.bind(usersAPI), unFollowSuccess);
   }
 }
 
